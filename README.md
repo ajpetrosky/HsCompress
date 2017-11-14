@@ -1,5 +1,5 @@
 # hsCompress
-A loseless compression command line tool, written in Haskell.
+A lossless compression library and command line tool, written in Haskell.
 
 ## Compilation
 ?
