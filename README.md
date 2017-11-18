@@ -7,5 +7,5 @@ The Compress.hs and Decompress.hs files may be imported to any project to compre
 ## Compilation
 To use the command line tool for compression:
 ```shell
-ghc ?????
+ghc -o compressor Compressor.hs
 ```
