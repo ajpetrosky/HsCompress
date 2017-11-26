@@ -7,7 +7,6 @@ module Compress where
 import qualified Data.Map as M
 -- Stores the encodings of a string to bits
 type Encoding = M.Map String Word16
-type
 
 -- Main compression function, takes in String
 compress :: String -> ByteString
