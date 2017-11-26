@@ -60,7 +60,8 @@ nextDecoding :: Decoding -> W.Word16 -> W.Word16 -> Decoding
 nextDecoding d w0 w1
   | M.member w1 d = addDecoding d (fromIntegral $ M.size d)
       (s0 ++ [head s1])
-  | otherwise     = undefined
+  | otherwise     = addDecoding d (fromIntegral $ M.size d)
+      (s0 ++ [head s0])
       where s0 = d M.! w0
             s1 = d M.! w1
 
