@@ -61,7 +61,7 @@ nextPattern = undefined
 1. If (size e) > 2^16, return e
 2. Otherwise, return (add e s w)
 -}
-addEncoding :: Encoding -> String -> Word16 -> Encoding
+addEncoding :: Encoding -> String -> W.Word16 -> Encoding
 addEncoding e s w
   | M.size e > maxSize = e
   | otherwise          = M.insert s w e

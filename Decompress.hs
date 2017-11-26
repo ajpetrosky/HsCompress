@@ -5,8 +5,11 @@ A decompression function
 module Decompress where
 
 import qualified Data.Map as M
+import qualified Data.Char as C
+import qualified Data.ByteString as B
+import qualified Data.Word as W
 -- Stores the decodings of bits to string
-type Decoding = M.Map Word16 String
+type Decoding = M.Map W.Word16 String
 
 -- Max size of ecoding table
 maxSize :: Int
@@ -19,7 +22,7 @@ maxSize = 2^16
 3. s = lzwDecompress bs 0 t
 4. return b
 -}
-decompress :: ByteString -> String
+decompress :: B.ByteString -> String
 decompress = undefined
 
 -- Create the table with all possible single ascii characters
@@ -37,7 +40,7 @@ initTable = undefined
 3. Recursively call d[curr] :: lzwDecompress
 4. Base case: if (Word16 0), then EOF so ""
 -}
-lzwDecompress :: ByteString -> Word16 -> Decoding -> String
+lzwDecompress :: B.ByteString -> W.Word16 -> Decoding -> String
 lzwDecompress = undefined
 
 -- Get next decoding from decoding table
@@ -46,7 +49,7 @@ lzwDecompress = undefined
 2. creates new decoding of (size + h1) for p + c[0]
 3. Edge case: when c is not in the d then c = the p
 -}
-nextDecoding :: Decoding -> Word16 -> Word16 -> Decoding
+nextDecoding :: Decoding -> W.Word16 -> W.Word16 -> Decoding
 nextDecoding = undefined
 
 -- Add to Decoding safely (does that add more than the max table size)
@@ -54,5 +57,5 @@ nextDecoding = undefined
 1. If (size e) > 2^16, return e
 2. Otherwise, return (add e s w)
 -}
-addDecoding :: Decoding -> Word16 -> String -> Decoding
+addDecoding :: Decoding -> W.Word16 -> String -> Decoding
 addDecoding = undefined
