@@ -5,7 +5,6 @@ A command line tool for compressing files
 import qualified Compress
 import qualified Decompress
 
-main :: IO ()
 {-
 1. Read in file name and whether compressing or decompressing
 2a. If compressing: read file f as string s, then Compress.compress s
@@ -14,3 +13,5 @@ main :: IO ()
     Decompress.decompress s
 3b. Write string to a new file called f without .hsc
 -}
+main :: IO ()
+main = undefined
