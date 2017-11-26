@@ -25,15 +25,20 @@ maxSize = 2^16
 4. return b
 -}
 decompress :: B.ByteString -> String
-decompress = undefined
+decompress bs = lzwDecompress bs 0 t where
+  d :: Decoding
+  d = initTable
 
 -- Create the table with all possible single ascii characters
 {-
 map[word16(0)] = ""
 1. Add all ascii to table with key [0..256] value [a..z,A..Z]
 -}
-initTable :: String -> Decoding
-initTable = undefined
+initTable :: Decoding
+initTable = foldr (\i d' -> M.insert
+  (fromIntegral i) [C.chr i] d') d [0..255] where
+    d :: Decoding
+    d = M.empty
 
 -- Compress the string into a bit string using LZW
 {-

@@ -27,14 +27,14 @@ maxSize = 2^16
 compress :: String -> B.ByteString
 compress s = BB.toLazyByteString $ lzwCompress s t where
   t :: Encoding
-  t = initTable s
+  t = initTable
 
 -- Create the table with all possible single ascii characters
 {-
 1. Add all ascii to table with value [a..z,A..Z] key [0..255]
 -}
-initTable :: String -> Encoding
-initTable s = foldr (\i e' -> M.insert [C.chr i]
+initTable :: Encoding
+initTable = foldr (\i e' -> M.insert [C.chr i]
   (fromIntegral i) e') e [0..255] where
     e :: Encoding
     e = M.empty
