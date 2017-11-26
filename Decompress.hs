@@ -52,12 +52,17 @@ lzwDecompress = undefined
 
 -- Get next decoding from decoding table
 {-
-1. d p c = gets the string matching the p and the string matching c
-2. creates new decoding of (size + h1) for p + c[0]
-3. Edge case: when c is not in the d then c = the p
+1. d w0 w1 = gets the string matching w0 and the string matching w1
+2. creates new decoding of (size + 1) for s0 + s1[0]
+3. Edge case: when w1 is not in the d then w1 = w0
 -}
 nextDecoding :: Decoding -> W.Word16 -> W.Word16 -> Decoding
-nextDecoding = undefined
+nextDecoding d w0 w1
+  | M.member w1 d = addDecoding d (fromIntegral $ M.size d)
+      (s0 ++ [head s1])
+  | otherwise     = undefined
+      where s0 = d M.! w0
+            s1 = d M.! w1
 
 -- Add to Decoding safely (does that add more than the max table size)
 {-
