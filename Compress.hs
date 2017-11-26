@@ -5,11 +5,14 @@ A compression function
 module Compress where
 
 import qualified Data.Map as M
+import qualified Data.Char as C
+import qualified Data.ByteString as B
+import qualified Data.Word as W
 -- Stores the encodings of a string to bits
-type Encoding = M.Map String Word16
+type Encoding = M.Map String W.Word16
 
 -- Main compression function, takes in String
-compress :: String -> ByteString
+compress :: String -> B.ByteString
 {-
 1. input: String s
 2. t = initTable
@@ -25,9 +28,13 @@ initTable :: String -> Encoding
 {-
 1. Add all ascii to table with value [a..z,A..Z] key [0..256]
 -}
+initTable s = foldr (\i t' -> M.insert [C.chr i]
+  (fromIntegral i) t') t [0..255] where
+    t :: Encoding
+    t = M.empty
 
 -- Compress the string into a bit string using LZW
-lzwCompress :: String -> Encoding -> ByteString
+lzwCompress :: String -> Encoding -> B.ByteString
 {-
 1. Pattern match on string to find match in encoding table
 2. CONS Match to ByteString
