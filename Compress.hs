@@ -54,7 +54,10 @@ lzwCompress = undefined
 1. s0 s1 e -> (match, s')
 -}
 nextPattern :: String -> String -> Encoding -> (String, String)
-nextPattern = undefined
+nextPattern s0 s1@(x:xs) e
+  | M.member (s0++[x]) e = nextPattern (s0++[x]) xs e
+  | otherwise          = (s0,s1)
+nextPattern s0 s1 e    = (s0,s1)
 
 -- Add to Encoding safely (does that add more than the max table size)
 {-
