@@ -65,4 +65,6 @@ nextDecoding = undefined
 2. Otherwise, return (add e s w)
 -}
 addDecoding :: Decoding -> W.Word16 -> String -> Decoding
-addDecoding = undefined
+addDecoding d w s
+  | M.size d > maxSize = d
+  | otherwise          = M.insert w s d
