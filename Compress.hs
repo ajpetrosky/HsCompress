@@ -22,7 +22,7 @@ maxSize = 2^16
 1. input: String s
 2. t = initTable
 3. b = lzwCompress s t
-4. return b
+4. return byte string of b
 -}
 compress :: String -> B.ByteString
 compress s = BB.toLazyByteString $ lzwCompress s t where
