@@ -16,6 +16,9 @@ compress :: String -> ByteString
 3. b = lzwCompress s t
 4. return b
 -}
+compress s = lzwCompress s t where
+  t :: Encoding
+  t = initTable s
 
 -- Create the table with all possible single ascii characters
 initTable :: String -> Encoding
