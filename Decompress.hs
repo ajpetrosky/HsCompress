@@ -4,10 +4,12 @@ A decompression function
 
 module Decompress where
 
+import Data.Monoid
 import qualified Data.Map as M
 import qualified Data.Char as C
-import qualified Data.ByteString as B
+import qualified Data.ByteString.Lazy as B
 import qualified Data.Word as W
+import qualified Data.ByteString.Builder as BB
 -- Stores the decodings of bits to string
 type Decoding = M.Map W.Word16 String
 
