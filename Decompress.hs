@@ -10,12 +10,13 @@ import qualified Data.Char as C
 import qualified Data.ByteString.Lazy as B
 import qualified Data.Word as W
 import qualified Data.ByteString.Builder as BB
+import qualified Data.Bits as Bits
 -- Stores the decodings of bits to string
 type Decoding = M.Map W.Word16 String
 
 -- Max size of ecoding table
 maxSize :: Int
-maxSize = 2^16
+maxSize = 2^16 - 2
 
 -- Main decompression function, takes in String
 {-
@@ -25,7 +26,7 @@ maxSize = 2^16
 4. return b
 -}
 decompress :: B.ByteString -> String
-decompress bs = lzwDecompress bs 0 t where
+decompress bs = lzwDecompress (map fromIntegral $ B.unpack bs) () d where
   d :: Decoding
   d = initTable
 
@@ -47,8 +48,12 @@ initTable = foldr (\i d' -> M.insert
 3. Recursively call d[curr] :: lzwDecompress
 4. Base case: if (Word16 0), then EOF so ""
 -}
-lzwDecompress :: B.ByteString -> W.Word16 -> Decoding -> String
-lzwDecompress = undefined
+lzwDecompress :: [Int] -> W.Word16 -> Decoding -> String
+lzwDecompress (b1:b2:bs) w d = nd M.! (fromIntegral $ b1 + b2) ++ lzwDecompress bs (fromIntegral $ b1 + b2) nd where
+  nd
+    | w > -1 = nextDecoding d (fromIntegral $ b1 + b2) w
+    | otherwise = nextDecoding d (fromIntegral $ b1 + b2) w
+lzwDecompress _ _ _ = ""
 
 -- Get next decoding from decoding table
 {-
@@ -57,13 +62,13 @@ lzwDecompress = undefined
 3. Edge case: when w1 is not in the d then w1 = w0
 -}
 nextDecoding :: Decoding -> W.Word16 -> W.Word16 -> Decoding
-nextDecoding d w0 w1
-  | M.member w1 d = addDecoding d (fromIntegral $ M.size d)
+nextDecoding d prev curr
+  | M.member curr d = addDecoding d (fromIntegral $ M.size d)
       (s0 ++ [head s1])
-  | otherwise     = addDecoding d (fromIntegral $ M.size d)
+  | otherwise       = addDecoding d (fromIntegral $ M.size d)
       (s0 ++ [head s0])
-      where s0 = d M.! w0
-            s1 = d M.! w1
+      where s0 = d M.! prev
+            s1 = d M.! curr
 
 -- Add to Decoding safely (does that add more than the max table size)
 {-

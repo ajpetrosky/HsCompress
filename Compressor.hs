@@ -3,7 +3,9 @@ A command line tool for compressing files
 -}
 
 import qualified Compress
-import qualified Decompress
+--import qualified Decompress
+import System.Environment
+import Data.ByteString.Lazy as BS
 
 {-
 1. Read in file name and whether compressing or decompressing
@@ -14,4 +16,6 @@ import qualified Decompress
 3b. Write string to a new file called f without .hsc
 -}
 main :: IO ()
-main = undefined
+main = do
+    s <- getLine
+    BS.writeFile "./Tarm.hsc" (Compress.compress s)
