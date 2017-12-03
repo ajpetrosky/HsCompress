@@ -10,6 +10,7 @@ import qualified Data.Char as C
 import qualified Data.ByteString.Lazy as B
 import qualified Data.Word as W
 import qualified Data.ByteString.Builder as BB
+import Data.Sequence ((><), (<|), (|>))
 -- Stores the encodings of a string to bits
 type Encoding = M.Map String W.Word16
 
@@ -48,10 +49,12 @@ initTable = foldr (\i e' -> M.insert [C.chr i]
 5. Base case: -1
 -}
 lzwCompress :: String -> Encoding -> BB.Builder
-lzwCompress s@(x:xs) e = BB.word16BE (e M.! match) <> lzwCompress s' e' where
-  (match, s') = nextPattern [x] xs e
-  e' = if null s' then e else
-    addEncoding e (match ++ [head s']) (fromIntegral $ M.size e')
+lzwCompress s@(x:xs) e
+  | M.size e > maxSize = BB.word16BE (e M.! match) <> lzwCompress s' e'
+  | otherwise = BB.word16BE (e M.! match) <> lzwCompress s' e'
+    where (match, s') = nextPattern [x] xs e
+          e' = if null s' then e else
+            addEncoding e (match ++ [head s']) (fromIntegral $ M.size e')
 lzwCompress []    _ = BB.word8 $ fromIntegral (-1)
 
 -- Get next largest pattern that is in the LZW table
@@ -62,8 +65,9 @@ bc
 -}
 nextPattern :: String -> String -> Encoding -> (String, String)
 nextPattern s0 s1@(x:xs) e
-  | M.member (s0++[x]) e = nextPattern (s0++[x]) xs e
+  | M.member test e = nextPattern test xs e
   | otherwise            = (s0,s1)
+    where test = s0 ++ [x]
 nextPattern s0 s1 e      = (s0,s1)
 
 -- Add to Encoding safely (does that add more than the max table size)

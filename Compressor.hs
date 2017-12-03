@@ -3,9 +3,11 @@ A command line tool for compressing files
 -}
 
 import qualified Compress
---import qualified Decompress
+import qualified Decompress
+import qualified Data.ByteString.Lazy as B
+import Data.Text as T
 import System.Environment
-import Data.ByteString.Lazy as BS
+import System.Exit
 
 {-
 1. Read in file name and whether compressing or decompressing
@@ -15,7 +17,25 @@ import Data.ByteString.Lazy as BS
     Decompress.decompress s
 3b. Write string to a new file called f without .hsc
 -}
-main :: IO ()
-main = do
-    s <- getLine
-    BS.writeFile "./Tarm.hsc" (Compress.compress s)
+main :: IO()
+main = getArgs >>= parse
+
+parse :: [String] -> IO()
+parse ("-c":[fs]) = c fs >> exitSuccess
+parse ("-d":[fs]) = d fs >> exitSuccess
+parse _ = putStrLn "Needs a flag -c or -d for compression or decompression respectively, followed by a file name." >> failure
+
+failure :: IO()
+failure  = exitWith (ExitFailure 1)
+
+-- Compress the given file
+c :: String -> IO()
+c fp = do
+    file <- Prelude.readFile fp
+    B.writeFile (fp ++ ".hsc") (Compress.compress file)
+
+-- Decompress the given file
+d :: String -> IO()
+d fp = do
+    file <- B.readFile fp
+    Prelude.writeFile (fp ++ ".nonhsc") (Decompress.decompress file)
