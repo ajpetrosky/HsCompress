@@ -9,6 +9,9 @@ import Test.QuickCheck
 import Compress
 import Decompress
 import Control.Monad (liftM2)
+import Data.Monoid
+import qualified Data.Word as W
+import qualified Data.ByteString.Builder as BB
 import qualified Data.ByteString.Lazy as B
 
 {-
@@ -19,8 +22,20 @@ Questions:
 -}
 
 -- Unit tests for compressing small strings
+tCompress :: Test
+tCompress = "tCompress" ~: TestList
+  [ compress "" ~?= BB.toLazyByteString (BB.word8 $ fromIntegral (-1))
+  , compress "a" ~?= BB.toLazyByteString (BB.word16BE 97 <> BB.word8 (fromIntegral (-1)))
+  , compress "aaa" ~?= BB.toLazyByteString (BB.word16BE 97 <> BB.word16BE 257 <> BB.word8 (fromIntegral (-1)))
+  ]
 
 -- Unit tests for decompressing small bytestrings
+tDecompress :: Test
+tDecompress = "tDecompress" ~: TestList
+  [ decompress (BB.toLazyByteString (BB.word8 $ fromIntegral (-1))) ~?= ""
+  , decompress (BB.toLazyByteString (BB.word16BE 97 <> BB.word8 (fromIntegral (-1)))) ~?= "a"
+  , decompress (BB.toLazyByteString (BB.word16BE 97 <> BB.word16BE 257 <> BB.word8 (fromIntegral (-1)))) ~?= "aaa"
+  ]
 
 -- Test that (compression -> decompression) is lossless
 prop_loseless :: String -> Property
