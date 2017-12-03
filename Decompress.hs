@@ -26,7 +26,7 @@ maxSize = 2^16 - 2
 4. return b
 -}
 decompress :: B.ByteString -> String
-decompress bs = lzwDecompress (map fromIntegral $ B.unpack bs) () d where
+decompress bs = lzwDecompress (map fromIntegral $ B.unpack bs) ((2^16)-1) d where
   d :: Decoding
   d = initTable
 
@@ -49,10 +49,9 @@ initTable = foldr (\i d' -> M.insert
 4. Base case: if (Word16 0), then EOF so ""
 -}
 lzwDecompress :: [Int] -> W.Word16 -> Decoding -> String
-lzwDecompress (b1:b2:bs) w d = nd M.! (fromIntegral $ b1 + b2) ++ lzwDecompress bs (fromIntegral $ b1 + b2) nd where
-  nd
-    | w > -1 = nextDecoding d (fromIntegral $ b1 + b2) w
-    | otherwise = nextDecoding d (fromIntegral $ b1 + b2) w
+lzwDecompress (b1:b2:bs) prev d = nd M.! curr ++ lzwDecompress bs curr nd
+  where curr = fromIntegral ((b1 * 2^8) + b2)
+        nd = nextDecoding d prev curr
 lzwDecompress _ _ _ = ""
 
 -- Get next decoding from decoding table
@@ -63,6 +62,8 @@ lzwDecompress _ _ _ = ""
 -}
 nextDecoding :: Decoding -> W.Word16 -> W.Word16 -> Decoding
 nextDecoding d prev curr
+  | prev ==  2^16 - 1 = addDecoding d (fromIntegral $ M.size d)
+      (s0 ++ [head s0])
   | M.member curr d = addDecoding d (fromIntegral $ M.size d)
       (s0 ++ [head s1])
   | otherwise       = addDecoding d (fromIntegral $ M.size d)
