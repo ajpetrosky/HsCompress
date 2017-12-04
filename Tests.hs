@@ -60,3 +60,16 @@ toString (SmallAlphabet s) = s
 
 -- Informal testing of command line tool
 -- *Complete*
+
+-- All the tests in one convenient place:
+
+quickCheckN :: Test.QuickCheck.Testable prop => Int -> prop -> IO ()
+quickCheckN n = quickCheckWith $ stdArgs { maxSuccess = n }
+
+main :: IO ()
+main = do
+    putStrLn "Unit tests:"
+    runTestTT $ TestList [tCompress, tDecompress]
+    putStrLn "Quickcheck properties:"
+    quickCheckN 500 prop_loseless
+    quickCheckN 500 prop_ratio

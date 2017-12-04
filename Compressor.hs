@@ -38,4 +38,10 @@ c fp = do
 d :: String -> IO()
 d fp = do
     file <- B.readFile fp
-    Prelude.writeFile (fp ++ ".nonhsc") (Decompress.decompress file)
+    let name = removeExt fp
+    Prelude.writeFile name (Decompress.decompress file)
+
+removeExt :: String -> String
+removeExt ['.','h','s','c'] = []
+removeExt (x:xs)            = x : removeExt xs
+removeExt _                 = error "Invalid file extension."
