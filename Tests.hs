@@ -13,12 +13,11 @@ import Data.Monoid
 import qualified Data.Word as W
 import qualified Data.ByteString.Builder as BB
 import qualified Data.ByteString.Lazy as B
+import qualified Data.Char as C
 
 {-
 Questions:
-1. How to remove file extension?
-2. Help with test prop_loseless and backslashes
-3. How to optimize compress (ex. hard.txt)
+1. How to optimize compress (ex. hard.txt)? Maybe string laziness, many concats
 -}
 
 -- Unit tests for compressing small strings
@@ -38,8 +37,16 @@ tDecompress = "tDecompress" ~: TestList
   ]
 
 -- Test that (compression -> decompression) is lossless
-prop_loseless :: String -> Property
-prop_loseless s = '\\' `notElem` s ==> s == (decompress . compress) s
+prop_lossless :: SafeStr -> Bool
+prop_lossless s = toStr s == (decompress . compress) (toStr s)
+
+newtype SafeStr = SafeStr String deriving (Eq, Ord, Show, Read)
+
+instance Arbitrary SafeStr where
+  arbitrary = SafeStr <$> listOf (elements (map C.chr [0..255]))
+
+toStr :: SafeStr -> String
+toStr (SafeStr s) = s
 
 -- Test with small alphabet and many repeats, compressed file is smaller
 prop_ratio :: SmallAlphabet -> Property
@@ -71,5 +78,5 @@ main = do
     putStrLn "Unit tests:"
     runTestTT $ TestList [tCompress, tDecompress]
     putStrLn "Quickcheck properties:"
-    quickCheckN 500 prop_loseless
+    quickCheckN 500 prop_lossless
     quickCheckN 500 prop_ratio
