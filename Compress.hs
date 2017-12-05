@@ -49,9 +49,7 @@ initTable = foldr (\i e' -> M.insert [C.chr i]
 5. Base case: -1
 -}
 lzwCompress :: String -> Encoding -> BB.Builder
-lzwCompress s@(x:xs) e
-  | M.size e > maxSize = BB.word16BE (e M.! match) <> lzwCompress s' e'
-  | otherwise = BB.word16BE (e M.! match) <> lzwCompress s' e'
+lzwCompress s@(x:xs) e = BB.word16BE (e M.! match) <> lzwCompress s' e'
     where (match, s') = nextPattern [x] xs e
           e' = if null s' then e else
             addEncoding e (match ++ [head s']) (fromIntegral $ M.size e')
@@ -60,8 +58,6 @@ lzwCompress []    _ = BB.word8 $ fromIntegral (-1)
 -- Get next largest pattern that is in the LZW table
 {-
 1. s0 s1 e -> (match, s')
-
-bc
 -}
 nextPattern :: String -> String -> Encoding -> (String, String)
 nextPattern s0 s1@(x:xs) e
