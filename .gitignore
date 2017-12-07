@@ -23,3 +23,6 @@ ChangeLog.md
 afc.txt
 Tarm.txt
 Tarm.hsc
+*.txt
+*.hsc
+compressor

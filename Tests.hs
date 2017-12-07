@@ -17,7 +17,7 @@ import qualified Data.Char as C
 
 {-
 Questions:
-1. How to optimize compress (ex. hard.txt)? Maybe string laziness, many concats
+1. How to optimize compress (ex. hard.txt)? Maybe string laziness?
 -}
 
 -- Unit tests for compressing small strings
