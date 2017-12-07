@@ -11,6 +11,8 @@ import qualified Data.ByteString.Lazy as B
 import qualified Data.Word as W
 import qualified Data.ByteString.Builder as BB
 import qualified Data.Bits as Bits
+import Data.Maybe
+
 -- Stores the decodings of bits to string
 type Decoding = M.Map W.Word16 String
 
@@ -26,9 +28,9 @@ maxSize = 2^16 - 2
 4. return b
 -}
 decompress :: B.ByteString -> String
-decompress bs = lzwDecompress (map fromIntegral $ B.unpack bs) ((2^16)-1) d where
-  d :: Decoding
-  d = initTable
+decompress bs = lzwDecompress (map fromIntegral $ B.unpack bs) ((2^16)-1) d
+                  where d :: Decoding
+                        d = initTable
 
 -- Create the table with all possible single ascii characters
 {-
@@ -36,10 +38,9 @@ map[word16(0)] = ""
 1. Add all ascii to table with key [0..256] value [a..z,A..Z]
 -}
 initTable :: Decoding
-initTable = foldr (\i d' -> M.insert
-  (fromIntegral i) [C.chr i] d') d [0..255] where
-    d :: Decoding
-    d = M.empty
+initTable = foldr (\i d' -> M.insert (fromIntegral i) [C.chr i] d') d [0..255]
+              where d :: Decoding
+                    d = M.empty
 
 -- Compress the string into a bit string using LZW
 {-
@@ -49,9 +50,10 @@ initTable = foldr (\i d' -> M.insert
 4. Base case: if (Word16 0), then EOF so ""
 -}
 lzwDecompress :: [Int] -> W.Word16 -> Decoding -> String
-lzwDecompress (b1:b2:bs) prev d = nd M.! curr ++ lzwDecompress bs curr nd
-  where curr = fromIntegral ((b1 * 2^8) + b2)
-        nd = nextDecoding d prev curr
+lzwDecompress (b1:b2:bs) prev d = decode ++ lzwDecompress bs curr nd
+  where curr   = fromIntegral ((b1 * 2^8) + b2)
+        nd     = nextDecoding d prev curr
+        decode = fromMaybe (error ("Invalid byte-sequence " ++ show curr ++ " encountered. Stopping.\n")) (M.lookup curr nd)
 lzwDecompress _ _ _ = ""
 
 -- Get next decoding from decoding table
@@ -62,7 +64,7 @@ lzwDecompress _ _ _ = ""
 -}
 nextDecoding :: Decoding -> W.Word16 -> W.Word16 -> Decoding
 nextDecoding d prev curr
-  | prev ==  2^16 - 1 = addDecoding d (fromIntegral $ M.size d)
+  | prev == 2^16 - 1 = addDecoding d (fromIntegral $ M.size d)
       (s0 ++ [head s0])
   | M.member curr d = addDecoding d (fromIntegral $ M.size d)
       (s0 ++ [head s1])
