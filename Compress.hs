@@ -10,9 +10,11 @@ import qualified Data.Char as C
 import qualified Data.ByteString.Lazy as B
 import qualified Data.Word as W
 import qualified Data.ByteString.Builder as BB
-import Data.Sequence ((><), (<|), (|>))
+import qualified Data.DList as DL
+import Data.Maybe
+
 -- Stores the encodings of a string to bits
-type Encoding = M.Map String W.Word16
+type Encoding = M.Map (DL.DList Char) W.Word16
 
 -- Max size of ecoding table
 maxSize :: Int
@@ -35,10 +37,10 @@ compress s = BB.toLazyByteString $ lzwCompress s t where
 1. Add all ascii to table with value [a..z,A..Z] key [0..255]
 -}
 initTable :: Encoding
-initTable = foldr (\i e' -> M.insert [C.chr i]
-  (fromIntegral i) e') e [0..255] where
-    e :: Encoding
-    e = M.empty
+initTable = foldr (\i e' -> M.insert (DL.singleton (C.chr i))
+  (fromIntegral i) e') e [0..255]
+    where e :: Encoding
+          e = M.empty
 
 -- Compress the string into a bit string using LZW
 {-
@@ -49,29 +51,31 @@ initTable = foldr (\i e' -> M.insert [C.chr i]
 5. Base case: -1
 -}
 lzwCompress :: String -> Encoding -> BB.Builder
-lzwCompress s@(x:xs) e = BB.word16BE (e M.! match) <> lzwCompress s' e'
-    where (match, s') = nextPattern [x] xs e
-          e' = if null s' then e else
-            addEncoding e (match ++ [head s']) (fromIntegral $ M.size e')
+lzwCompress s@(x:xs) e = BB.word16BE code <> lzwCompress s' e'
+    where (match, s') = nextPattern (DL.singleton x) xs e
+          e' = case s' of
+                []     -> e
+                (x:xs) -> addEncoding e (DL.snoc match (head s')) (fromIntegral $ M.size e')
+          code = fromMaybe (error ("Non-ASCII character " ++ DL.toList match ++ " encountered. Stopping.\n")) (M.lookup match e)
 lzwCompress []    _ = BB.word8 $ fromIntegral (-1)
 
 -- Get next largest pattern that is in the LZW table
 {-
 1. s0 s1 e -> (match, s')
 -}
-nextPattern :: String -> String -> Encoding -> (String, String)
+nextPattern :: DL.DList Char -> String -> Encoding -> (DL.DList Char, String)
 nextPattern s0 s1@(x:xs) e
   | M.member test e = nextPattern test xs e
-  | otherwise            = (s0,s1)
-    where test = s0 ++ [x]
-nextPattern s0 s1 e      = (s0,s1)
+  | otherwise       = (s0,s1)
+    where test = DL.snoc s0 x
+nextPattern s0 s1 e = (s0,s1)
 
 -- Add to Encoding safely (does that add more than the max table size)
 {-
 1. If (size e) > 2^16, return e
 2. Otherwise, return (add e s w)
 -}
-addEncoding :: Encoding -> String -> W.Word16 -> Encoding
+addEncoding :: Encoding -> DL.DList Char -> W.Word16 -> Encoding
 addEncoding e s w
   | M.size e > maxSize = e
   | otherwise          = M.insert s w e
