@@ -15,11 +15,6 @@ import qualified Data.ByteString.Builder as BB
 import qualified Data.ByteString.Lazy as B
 import qualified Data.Char as C
 
-{-
-Questions:
-1. How to optimize compress (ex. hard.txt)? Maybe string laziness?
--}
-
 -- Unit tests for compressing small strings
 tCompress :: Test
 tCompress = "tCompress" ~: TestList
