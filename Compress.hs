@@ -29,7 +29,7 @@ maxSize = 2^16 - 2
 -}
 compress :: String -> B.ByteString
 compress s = BB.toLazyByteString $ foldr (\w b -> BB.word16BE w <> b)
-              (BB.word8 $ fromIntegral (-1)) l 
+              (BB.word8 $ fromIntegral (-1)) l
   where t :: Encoding
         t = initTable
         l :: DL.DList W.Word16
