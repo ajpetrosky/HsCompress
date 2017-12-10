@@ -28,9 +28,12 @@ maxSize = 2^16 - 2
 4. return byte string of b
 -}
 compress :: String -> B.ByteString
-compress s = BB.toLazyByteString $ lzwCompress s t where
-  t :: Encoding
-  t = initTable
+compress s = BB.toLazyByteString $ foldr (\w b -> BB.word16BE w <> b)
+              (BB.word8 $ fromIntegral (-1)) l 
+  where t :: Encoding
+        t = initTable
+        l :: DL.DList W.Word16
+        l = lzwCompress s t
 
 -- Create the table with all possible single ascii characters
 {-
@@ -50,14 +53,14 @@ initTable = foldr (\i e' -> M.insert (DL.singleton (C.chr i))
 4. Recursively call append (result of getting match in map) lzwCompress
 5. Base case: -1
 -}
-lzwCompress :: String -> Encoding -> BB.Builder
-lzwCompress s@(x:xs) e = BB.word16BE code <> lzwCompress s' e'
+lzwCompress :: String -> Encoding -> DL.DList W.Word16
+lzwCompress s@(x:xs) e = DL.append (DL.singleton code) (lzwCompress s' e')
     where (match, s') = nextPattern (DL.singleton x) xs e
           e' = case s' of
                 []     -> e
                 (x:xs) -> addEncoding e (DL.snoc match (head s')) (fromIntegral $ M.size e')
           code = fromMaybe (error ("Non-ASCII character " ++ DL.toList match ++ " encountered. Stopping.\n")) (M.lookup match e)
-lzwCompress []    _ = BB.word8 $ fromIntegral (-1)
+lzwCompress []    _ = DL.empty
 
 -- Get next largest pattern that is in the LZW table
 {-
