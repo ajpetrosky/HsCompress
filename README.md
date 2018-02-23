@@ -9,3 +9,5 @@ To use the command line tool for compression:
 ```shell
 ghc -o compressor Compressor.hs
 ```
+## Results
+![alt tag](results.png "Compressor Results on Sample Files")
